@@ -1,10 +1,13 @@
 from rest_framework import serializers
 from .models import Utilisateur
 
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from django.contrib.auth import authenticate
+
 class UtilisateurSerializer(serializers.ModelSerializer):
     class Meta :
         model = Utilisateur
-        fields = ['id','account_email','password','account_name','is_active','is_staff']
+        fields = ['id','account_image','account_email','password','account_name','is_active','is_staff']
         extra_kwargs = {
             'password':{'write_only':True}
         }
@@ -20,3 +23,4 @@ class UtilisateurSerializer(serializers.ModelSerializer):
         user.set_password(password)
         user.save()
         return user
+    

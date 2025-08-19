@@ -3,6 +3,9 @@ from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseU
 
 # Create your models here.
 
+def default_photo_profil():
+    return 'default/photo-profil-defaut.jpg'
+
 class UtilisateurManager(BaseUserManager):
     def create_user(self, account_email, password=None, **extra_fields):
         if not account_email:
@@ -18,14 +21,15 @@ class UtilisateurManager(BaseUserManager):
         extra_fields.setdefault("is_staff",True)
         extra_fields.setdefault("is_active",True)
         extra_fields.setdefault("is_superuser",True)
-        return self.create_user(account_email,password,**extra_fields)
+        return self.create_user(account_email,password,**extra_fields)  
     
 
 class Utilisateur(AbstractBaseUser, PermissionsMixin):
     account_email = models.EmailField(unique=True, verbose_name="Votre email")
-    account_name = models.CharField(max_length=200, blank=True, null=True, verbose_name="Votre nom et prenoms")
+    account_name = models.CharField(max_length=200, verbose_name="Votre nom et prenoms")
+    account_image = models.ImageField(upload_to='photo_profil/', default=default_photo_profil) # Ajout de photo de profil 
     account_created = models.DateTimeField(auto_now_add=True) # Date création
-    account_updated = models.DateTimeField(auto_now=True) # Date modification
+    account_updated = models.DateTimeField(auto_now=True) # Date modification   
     
     # Role
     is_staff = models.BooleanField(default=False)

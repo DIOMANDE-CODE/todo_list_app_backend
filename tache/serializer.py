@@ -1,21 +1,24 @@
 from rest_framework import serializers
-from .models import TaskGroup, Task
+from .models import Tache, SousTache
 
 from account.serializers import UtilisateurSerializer
 
-class TaskSerializer(serializers.ModelSerializer):
-    class Meta :
-        model = Task
-        fields = '__all__'
-        reads_only_fields = ['id','groupe_tache','created_at', 'updated_at']
 
-class TaskGroupSerializer(serializers.ModelSerializer):
+class SousTacheSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = SousTache
+        fields = '__all__'
+        reads_only_fields = ['id',  'created_at', 'updated_at']
+
+
+class TacheSerializer(serializers.ModelSerializer):
 
     proprietaire = UtilisateurSerializer(required=False, read_only=True)
     collaborateurs = UtilisateurSerializer(required=False, read_only=True, many=True)
-    taches = TaskSerializer(required=False, read_only=True, many=True)
+    taches = SousTacheSerializer(required=False, read_only=True, many=True)
 
-    class Meta:
-        model = TaskGroup
+    class Meta :
+        model = Tache
         fields = '__all__'
-        reads_only_fields = ['id','proprietaire','created_at', 'updated_at']
+        reads_only_fields = ['id','created_at', 'updated_at', 'proprietaire']

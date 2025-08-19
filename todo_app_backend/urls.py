@@ -17,17 +17,19 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-from account.views import LogoutView, acceuil
+from account.views import acceuil
+from django.conf.urls.static import static
+from django.conf import settings
+
+from rest_framework_simplejwt.views import TokenRefreshView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('users/', include('account.urls')),
-    path('task/', include('tache.urls')),
-
-    # urls token pour connexion et deconnexion
-    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    path('api/logout/',LogoutView.as_view(), name='token_logout'),
-    path('', acceuil, name="acceuil"),
+    path('tache/', include('tache.urls')),
+    path('api/users/', include('account.urls')),
+    path('',acceuil,name='acceuil'),
+    path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

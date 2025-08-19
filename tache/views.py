@@ -3,8 +3,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
-from .models import TaskGroup, Task
-from .serializer import TaskGroupSerializer, TaskSerializer
+from .models import Tache, SousTache
+from .serializer import TacheSerializer, SousTacheSerializer
 from account.models import Utilisateur
 
 from django.db.models import Q
@@ -12,70 +12,81 @@ from django.db.models import Q
 
 # Create your views here.
 
-# CRUD de TaskGroup
+# CRUD de Tache
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def liste_groupe_tache(request):
+def liste_tache(request):
     try :
-        liste_groupe = TaskGroup.objects.filter(
+        liste_tache = Tache.objects.filter(
             Q(proprietaire=request.user) | Q(collaborateurs=request.user)
             )
-        if not liste_groupe.exists():
+        if not liste_tache.exists():    
             return Response({
-                'detail':'aucun element trouvé'
+                'detail':'aucune tache trouvée'
             }, status=status.HTTP_204_NO_CONTENT)
-    except TaskGroup.DoesNotExist:
+    except Tache.DoesNotExist:
         return Response({
             "detail":"Erreur interne"
         }, status=status.HTTP_204_NO_CONTENT)
     
-    serializer = TaskGroupSerializer(liste_groupe, many=True)
+    serializer = TacheSerializer(liste_tache, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-def create_groupe_tache(request):
-    serializer = TaskGroupSerializer(data=request.data)
+def create_tache(request):
+    account_email = request.data.get('account_email')
+    nom_tache = request.data.get('nom_tache')
+    status_tache = request.data.get('status_tache')
+    
+    if Tache.objects.filter(proprietaire=account_email, nom_tache = nom_tache ,status_tache=status_tache).exists():
+        return Response({
+            "error":"Cette tache existe dejà"
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    serializer = TacheSerializer(data=request.data)
     if serializer.is_valid():
         serializer.save(proprietaire=request.user)
         return Response({
-            'detail':'nouveau group ajouté',
-            'groupe tache' : serializer.data
+            'message':'nouvelle tache ajoutée',
+            'detail' : serializer.data
         }, status=status.HTTP_201_CREATED)
+    print(serializer.errors)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['GET','PUT','DELETE'])
 @permission_classes([IsAuthenticated])
-def detail_groupe_tache(request, pk):
+def detail_tache(request, pk):
     try :
-        detail_groupe = TaskGroup.objects.get(id=pk)
+        detail_tache = Tache.objects.get(id=pk)
 
-    except TaskGroup.DoesNotExist:
+    except Tache.DoesNotExist:
         return Response({
-            'detail':'Aucun element trouvé'
+            'detail':'Aucune tache trouvée'
         }, status=status.HTTP_204_NO_CONTENT)
     
     # Verifier la permission
-    if request.user != detail_groupe.proprietaire and request.user not in detail_groupe.collaborateurs.all():
+    if request.user != detail_tache.proprietaire and request.user not in detail_tache.collaborateurs.all():
         return Response({
             'detail':'vous êtes pas autorisé'
         }, status=status.HTTP_403_FORBIDDEN)
     
 
     if request.method == 'GET':
-        serializer = TaskGroupSerializer(detail_groupe)
-        return Response(serializer.data, status=status.HTTP_302_FOUND)
+        serializer = TacheSerializer(detail_tache)
+        return Response(serializer.data, status=status.HTTP_200_OK) 
     
     if request.method == 'DELETE':
-        detail_groupe.delete()
+        detail_tache.delete()
         return Response({
-            'detail':'Element supprimé'
-        }, status=status.HTTP_204_NO_CONTENT)
+            'message':'Element supprimé'
+        }, status=status.HTTP_200_OK)
     
     if request.method == 'PUT':
-        serializer = TaskGroupSerializer(detail_groupe, data=request.data, partial=True)
+        serializer = TacheSerializer(detail_tache, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save(proprietaire=request.user)
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -83,31 +94,28 @@ def detail_groupe_tache(request, pk):
     
 
 
-
-
-
-# CRUD de Task
+# CRUD de Sous Tache
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-def create_tache(request, groupe_tache_id):
+def create_sous_tache(request, tache_id):
 
     try:
-        groupe_tache = TaskGroup.objects.get(id=groupe_tache_id)
-    except TaskGroup.DoesNotExist:
+        tache = Tache.objects.get(id=tache_id)
+    except Tache.DoesNotExist:
         return Response({
-            'detail':'groupe tache inexistant'
+            'detail':'La tache est inexistante'
         })
     
     # Verifier la permission
-    if request.user != groupe_tache.proprietaire and request.user not in groupe_tache.collaborateurs.all():
+    if request.user != tache.proprietaire and request.user not in tache.collaborateurs.all():
         return Response({
             'detail':'vous êtes pas autorisé'
         }, status=status.HTTP_403_FORBIDDEN)
 
-    serializer = TaskSerializer(data=request.data)
+    serializer = SousTacheSerializer(data=request.data)
     if serializer.is_valid():
-        serializer.save(groupe_tache=groupe_tache)
+        serializer.save(tache=tache)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
 
@@ -115,34 +123,34 @@ def create_tache(request, groupe_tache_id):
 
 @api_view(['GET','PUT','DELETE'])
 @permission_classes([IsAuthenticated])
-def detail_tache(request, tache_id):
+def detail_sous_tache(request, sous_tache_id):
     try:
-        tache = Task.objects.get(id=tache_id)
-    except Task.DoesNotExist:
+        sous_tache = SousTache.objects.get(id=sous_tache_id)
+    except SousTache.DoesNotExist:
         return Response({
             "detail":'aucun element trouvé'
         }, status=status.HTTP_200_OK)
     
     # Verifier la permission
-    groupe_tache_ = tache.groupe_tache
-    if request.user != groupe_tache_.proprietaire and request.user not in groupe_tache_.collaborateurs.all():
+    tache_ = sous_tache.tache
+    if request.user != tache_.proprietaire and request.user not in tache_.collaborateurs.all():
         return Response({
             'detail':'Accès non autorisé'
         })
     
 
     if request.method == 'GET':
-        serializer = TaskSerializer(tache)
+        serializer = SousTacheSerializer(sous_tache)
         return Response(serializer.data, status=status.HTTP_302_FOUND)
     
     if request.method == 'DELETE':
-        tache.delete()
+        sous_tache.delete()
         return Response({
             'detail':'tache supprimée'
         }, status=status.HTTP_200_OK)
     
     if request.method == 'PUT':
-        serializer = TaskSerializer(tache, data=request.data, partial=True)
+        serializer = SousTacheSerializer(sous_tache, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -153,14 +161,19 @@ def detail_tache(request, tache_id):
 # Ajout des collaborateurs
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-def ajout_collaborateurs(request,groupe_id):
+def ajout_collaborateurs(request,tache_id):
     try:
-        tache_groupe = TaskGroup.objects.get(id=groupe_id, proprietaire=request.user)
-    except TaskGroup.DoesNotExist:
+        tache = Tache.objects.get(id=tache_id, proprietaire=request.user)
+    except Tache.DoesNotExist:
         return Response({
-            'detail':'groupe tache inexistant'},status=status.HTTP_404_NOT_FOUND)
+            'detail':'tache inexistante'},status=status.HTTP_404_NOT_FOUND)
     
-    collaborateur = request.data.get('email')
+    collaborateur = request.data.get('emailCollaborateur')
+
+    if collaborateur is None :
+        return Response({
+            'detail':'veuillez ajouter un collaborateur'
+        })
 
 
     try:
@@ -169,15 +182,46 @@ def ajout_collaborateurs(request,groupe_id):
         return Response({
             'detail':'Compte non trouvé'
         }, status=status.HTTP_404_NOT_FOUND)
-     
 
-     # Verifier que l'utilisateur connecté n'est pas le collaborateur
+    # Verifier que l'utilisateur connecté n'est pas le collaborateur
     if request.user == user_add:
         return Response({
             'detail':'vous ne pouvez pas vous ajouter vous-même'
-        }, status=status.HTTP_200_OK)
+        }, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
     
-    tache_groupe.collaborateurs.add(user_add)
+    # Verifier que le collaborateur n'existe pas
+    if tache.collaborateurs.filter(account_email=user_add).exists():
+        return Response({
+            'detail':'Vous collaborez deja avec cet utilisateur'
+        }, status=status.HTTP_409_CONFLICT)
+    
+
+    tache.collaborateurs.add(user_add)
     return Response({
         'detail':'Collaborateur ajouté'
     }, status=status.HTTP_201_CREATED)
+
+# Suppression d'un collaborateur
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def suppression_collaborateurs(request, pk,email_collaborateur):
+    try :
+        detail_tache = Tache.objects.get(id=pk)
+    except Tache.DoesNotExist:
+        return Response({
+            'detail':'Aucune tache trouvée'
+        }, status=status.HTTP_204_NO_CONTENT)
+    
+    try :
+        user_deleted = Utilisateur.objects.get(account_email=email_collaborateur)
+    except Utilisateur.DoesNotExist:
+        return Response({
+            'detail':'Collaborateur inexistant'
+        }, status=status.HTTP_204_NO_CONTENT)
+
+    
+    if request.method == 'DELETE':
+        detail_tache.collaborateurs.remove(user_deleted)
+        return Response({
+            'detail':'collaborateur supprimée'
+        }, status=status.HTTP_200_OK)

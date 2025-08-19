@@ -1,17 +1,20 @@
 from django.urls import path
-from .views import liste_groupe_tache, create_groupe_tache, detail_groupe_tache, create_tache, detail_tache, ajout_collaborateurs
+from .views import liste_tache, create_tache, detail_tache, create_sous_tache, detail_sous_tache, ajout_collaborateurs, suppression_collaborateurs
 
 urlpatterns = [
 
-    # urls TaskGroup
-    path('group/list/', liste_groupe_tache, name='liste_groupe_tache'),
-    path('group/create/', create_groupe_tache, name='create_groupe_tache'),
-    path('group/detail/<int:pk>/', detail_groupe_tache, name='detail_groupe_tache'),
+    # urls Tache
+    path('list/', liste_tache, name='liste_tache'),
+    path('create/', create_tache, name='create_tache'),
+    path('detail/<int:pk>/', detail_tache, name='detail_tache'),
 
-    # urls Task
-    path('<int:groupe_tache_id>/create/', create_tache, name='create_tache'),
-    path('<int:tache_id>/detail/', detail_tache, name='detail_tache'),
+    # urls Sous Tache
+    path('<int:tache_id>/sous_tache/create/', create_sous_tache, name='create_sous_tache'),
+    path('<int:sous_tache_id>/sous_tache/detail/', detail_sous_tache, name='detail_sous_tache'),
 
     # urls ajout_collaborateurs
-    path('group/<int:groupe_id>/ajoutcollaborateur/', ajout_collaborateurs, name='ajout_collaborateurs'),
+    path('<int:tache_id>/ajout/collaborateur/', ajout_collaborateurs, name='ajout_collaborateur'),
+
+    # urls suppression_collaborateurs
+    path('<int:pk>/suppression/collaborateur/<str:email_collaborateur>/', suppression_collaborateurs, name='suppression_collaborateurs'),
 ]
