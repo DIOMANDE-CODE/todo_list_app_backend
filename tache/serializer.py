@@ -9,7 +9,7 @@ class SousTacheSerializer(serializers.ModelSerializer):
     class Meta:
         model = SousTache
         fields = '__all__'
-        reads_only_fields = ['id',  'created_at', 'updated_at']
+        reads_only_fields = ['id',  'created_at', 'updated_at', 'proprietaire']
 
 
 class TacheSerializer(serializers.ModelSerializer):

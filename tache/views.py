@@ -17,17 +17,13 @@ from django.db.models import Q
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def liste_tache(request):
-    try :
-        liste_tache = Tache.objects.filter(
-            Q(proprietaire=request.user) | Q(collaborateurs=request.user)
-            )
-        if not liste_tache.exists():    
-            return Response({
-                'detail':'aucune tache trouvée'
-            }, status=status.HTTP_204_NO_CONTENT)
-    except Tache.DoesNotExist:
+   
+    liste_tache = Tache.objects.filter(
+        Q(proprietaire=request.user) | Q(collaborateurs=request.user)
+        ).distinct()
+    if not liste_tache.exists():    
         return Response({
-            "detail":"Erreur interne"
+            'detail':'aucune tache trouvée'
         }, status=status.HTTP_204_NO_CONTENT)
     
     serializer = TacheSerializer(liste_tache, many=True)
@@ -88,7 +84,7 @@ def detail_tache(request, pk):
     if request.method == 'PUT':
         serializer = TacheSerializer(detail_tache, data=request.data, partial=True)
         if serializer.is_valid():
-            serializer.save(proprietaire=request.user)
+            serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
@@ -150,6 +146,7 @@ def detail_sous_tache(request, sous_tache_id):
         }, status=status.HTTP_200_OK)
     
     if request.method == 'PUT':
+
         serializer = SousTacheSerializer(sous_tache, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()

@@ -57,7 +57,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',
+    'corsheaders.middleware.CorsMiddleware', 
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -180,7 +180,6 @@ SIMPLE_JWT = {
     'USER_ID_CLAIM': 'user_id',
 }
 
-
 # Configuration CSRF_TRUSTED_ORIGIN
 CSRF_TRUSTED_ORIGINS = os.environ.get('CSRF_TRUSTED_ORIGINS').split(',')
 
@@ -191,3 +190,12 @@ CORS_ALLOW_CREDENTIALS = os.environ.get('CORS_ALLOW_CREDENTIALS') == 'True'
 # Configuration pour ajouter des images
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR,'media')
+
+
+# Après la ligne CORS_ALLOW_CREDENTIALS, ajoutez :
+print("=== DEBUG CORS ===")
+print("ALLOWED_HOSTS:", ALLOWED_HOSTS)
+print("CORS_ALLOWED_ORIGINS:", CORS_ALLOWED_ORIGINS)
+print("CSRF_TRUSTED_ORIGINS:", CSRF_TRUSTED_ORIGINS)
+print("CORS_ALLOW_CREDENTIALS:", CORS_ALLOW_CREDENTIALS)
+print("=================")

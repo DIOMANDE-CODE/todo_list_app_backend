@@ -142,6 +142,7 @@ def detail_utilisateur(request):
 
 # Lister les utilisateur inscrits
 @api_view(['GET'])
+@permission_classes([AllowAny])
 def liste_utilisateur(request):
     utilisateurs = Utilisateur.objects.filter(is_superuser=False)
     serializer = UtilisateurSerializer(utilisateurs, many=True)
