@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     'account',
     'tache',
     'rest_framework_simplejwt.token_blacklist',
+    'change_password',
 ]
 
 MIDDLEWARE = [
@@ -191,11 +192,12 @@ CORS_ALLOW_CREDENTIALS = os.environ.get('CORS_ALLOW_CREDENTIALS') == 'True'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR,'media')
 
+# Configuration d'envoi d'un email
+EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND')
+EMAIL_HOST = os.environ.get('EMAIL_HOST')
+EMAIL_PORT = os.environ.get('EMAIL_PORT')
+EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS')
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL')
 
-# Après la ligne CORS_ALLOW_CREDENTIALS, ajoutez :
-print("=== DEBUG CORS ===")
-print("ALLOWED_HOSTS:", ALLOWED_HOSTS)
-print("CORS_ALLOWED_ORIGINS:", CORS_ALLOWED_ORIGINS)
-print("CSRF_TRUSTED_ORIGINS:", CSRF_TRUSTED_ORIGINS)
-print("CORS_ALLOW_CREDENTIALS:", CORS_ALLOW_CREDENTIALS)
-print("=================")
