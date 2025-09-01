@@ -221,3 +221,16 @@ def suppression_collaborateurs(request, pk,email_collaborateur):
         return Response({
             'detail':'collaborateur supprimée'
         }, status=status.HTTP_200_OK)
+    
+
+# Fonction pour chercher les taches dans la base de données
+@api_view(['GET'])
+def search_tache(request):
+    search = request.GET.get('search','')
+    queryset = Tache.objects.all()
+
+    if search :
+        queryset = queryset.filter(nom_tache__icontains = search) | queryset.filter(description_tache__icontains = search)
+    
+    serializer = TacheSerializer(queryset,many=True)
+    return Response(serializer.data)

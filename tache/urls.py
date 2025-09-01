@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import liste_tache, create_tache, detail_tache, create_sous_tache, detail_sous_tache, ajout_collaborateurs, suppression_collaborateurs
+from .views import liste_tache, create_tache, detail_tache, create_sous_tache, detail_sous_tache, ajout_collaborateurs, suppression_collaborateurs, search_tache
 
 urlpatterns = [
 
@@ -17,4 +17,7 @@ urlpatterns = [
 
     # urls suppression_collaborateurs
     path('<int:pk>/suppression/collaborateur/<str:email_collaborateur>/', suppression_collaborateurs, name='suppression_collaborateurs'),
+
+    # urls recherche de tache
+    path('', search_tache, name='search_tache'),
 ]
