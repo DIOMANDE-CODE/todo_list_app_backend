@@ -7,15 +7,15 @@ from django.contrib.auth import authenticate
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 
-
 from django.http import JsonResponse
 
 from .models import Utilisateur
 from .serializers import UtilisateurSerializer
-
 from rest_framework_simplejwt.token_blacklist.models import OutstandingToken
 
-
+from django.conf import settings
+from django.contrib.auth.tokens import default_token_generator
+from django.core.mail import send_mail
 
 # Create your views here.
 
@@ -24,6 +24,8 @@ def acceuil(request):
     return JsonResponse({
         'message':'Bienvenue sur ma todo app'
     })
+
+
 
 # Fonction de connexion avec token généré
 @api_view(['POST'])
@@ -51,7 +53,7 @@ def login(request):
             'error':'Email ou mot de passe incorrect'
         },status=status.HTTP_401_UNAUTHORIZED)
     
-    if not user.is_active:
+    if user.is_active == False:
         return Response({
             "error":"Compte désactivé"
         })
@@ -89,6 +91,46 @@ def logout(request):
         }, status=status.HTTP_400_BAD_REQUEST)
     
 
+# Fonctionnalité d'envoi d'email + activation de compte
+def confirmation_par_email(email):
+    
+    # Recupérer l'utilisateur qui a ce mail
+    user = Utilisateur.objects.get(account_email=email)
+
+    # Générer un token de vérification
+    token = default_token_generator.make_token(user)
+    uid = user.pk
+    activating_account_url = f"{settings.FRONTEND_URL}/activation/{uid}/{token}"
+
+    # Envoi du mail de validation
+    send_mail(
+        subject="Activation de compte",
+        message=f"Activer votre compte en cliquant sur ce lien {activating_account_url}",
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        recipient_list=[email]
+    )
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def activer_compte(request, uid, token):
+
+    # recupérer l'utilisateur
+    user = Utilisateur.objects.get(pk=uid)
+
+    # Verifier que le token est valide
+    if not default_token_generator.check_token(user,token):
+        return Response({
+            "error":"token invalide"
+        }, status=400)
+    
+    # activer le compte
+    user.is_active = True
+    user.save()
+    return Response({
+        "message":"compte activé avec succès"
+    }, status=200)
+
+
 # Creation d'un utilisateur : POST
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -115,8 +157,9 @@ def register(request):
     serializer = UtilisateurSerializer(data=request.data)
     if serializer.is_valid():   
         serializer.save()
+        confirmation_par_email(email)
         return Response({
-                'message':'Compte crée avec succès, veuillez vous connecter',
+                'message':'Veuillez consulter votre boite email pour activer votre compte',
                 'utilisateur':serializer.data
             }, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -158,3 +201,5 @@ def delete_all_tokens(request):
     return Response({
         'message':'tokens supprimés'
     })
+
+# -----------------------------------------------------

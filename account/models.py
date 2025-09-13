@@ -33,6 +33,7 @@ class Utilisateur(AbstractBaseUser, PermissionsMixin):
     
     # Role
     is_staff = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=False)
 
     USERNAME_FIELD = 'account_email'
     REQUIRED_FIELDS = []

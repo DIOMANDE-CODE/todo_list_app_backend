@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import  liste_utilisateur, delete_all_tokens, detail_utilisateur,register,login,logout
+from .views import  liste_utilisateur, delete_all_tokens, detail_utilisateur,register,login,logout,activer_compte
 
 urlpatterns = [
     path('', liste_utilisateur, name='liste_utilisateur'),
@@ -10,4 +10,7 @@ urlpatterns = [
     path('register/', register, name='register'),
     path('login/', login, name='login'),
     path('logout/', logout, name='logout'),
+
+    # url pour activer un compte
+    path('activation/<int:uid>/<str:token>/', activer_compte, name='activer_compte'),
 ]
